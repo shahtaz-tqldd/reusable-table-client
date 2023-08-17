@@ -1,11 +1,7 @@
 "use client"
 
-import React, { useState } from "react"
-import {
-  CaretSortIcon,
-  ChevronDownIcon,
-  DotsHorizontalIcon,
-} from "@radix-ui/react-icons"
+import { useState } from "react"
+import { PiDotsThreeCircle } from 'react-icons/pi'
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -19,18 +15,6 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
 import {
   Table,
   TableBody,
@@ -39,8 +23,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { DropdownMenuRadioGroup, DropdownMenuRadioItem } from "@radix-ui/react-dropdown-menu"
-import { PiDotsThreeCircle } from "react-icons/pi"
+
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "@radix-ui/react-dropdown-menu"
+import { ChevronDownIcon } from "lucide-react"
+import { CaretSortIcon } from "@radix-ui/react-icons"
+import { Checkbox } from "@radix-ui/react-checkbox"
 
 type UserInfo = {
   id: number
@@ -150,16 +149,20 @@ export const columns: ColumnDef<UserInfo>[] = [
     ),
   }
 ]
-interface TableViewProps {
-  data: UserInfo[];
+interface DataTableProps<TData, TValue> {
+  columns: ColumnDef<TData, TValue>[]
+  data: TData[]
 }
 
-export function TableView({ data }: TableViewProps) {
+const TableView = <TData, TValue>({
+  columns,
+  data,
+}: DataTableProps<TData, TValue>) => {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
   const [filter, setFilter] = useState({ title: "Email", value: "email" })
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
 
   const table = useReactTable({
     data,
@@ -182,7 +185,7 @@ export function TableView({ data }: TableViewProps) {
 
   return (
     <div className="rounded-md border bg-white my-6 p-6 lg:w-3/5 w-full">
-      <div className="flex items-center py-4">
+      <div className="flex items-center py-4 gap-4">
         <Input
           placeholder={`Filter ${filter.title}...`}
           value={(table.getColumn(filter.value)?.getFilterValue() as string) ?? ""}
@@ -193,7 +196,7 @@ export function TableView({ data }: TableViewProps) {
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button><PiDotsThreeCircle className="text-2xl ml-4" /></button>
+            <button><PiDotsThreeCircle className="text-2xl" /></button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-44 bg-white p-3 rounded-lg border border-gray-400">
             <DropdownMenuLabel className="text-sm ml-1">Select a colum</DropdownMenuLabel>
@@ -207,17 +210,18 @@ export function TableView({ data }: TableViewProps) {
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
               Columns <ChevronDownIcon className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" className="bg-white border border-gray-400 px-5 py-2 rounded-lg">
             {table
               .getAllColumns()
               .filter((column) => column.getCanHide())
-              ?.map((column) => {
+              .map((column) => {
                 return (
                   <DropdownMenuCheckboxItem
                     key={column.id}
@@ -237,9 +241,9 @@ export function TableView({ data }: TableViewProps) {
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            {table.getHeaderGroups()?.map((headerGroup) => (
+            {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers?.map((header) => {
+                {headerGroup.headers.map((header) => {
                   return (
                     <TableHead key={header.id}>
                       {header.isPlaceholder
@@ -256,12 +260,12 @@ export function TableView({ data }: TableViewProps) {
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows?.map((row) => (
+              table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                 >
-                  {row.getVisibleCells()?.map((cell) => (
+                  {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
@@ -311,3 +315,5 @@ export function TableView({ data }: TableViewProps) {
     </div>
   )
 }
+
+export default TableView

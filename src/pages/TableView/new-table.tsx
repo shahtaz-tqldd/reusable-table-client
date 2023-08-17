@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import * as React from "react"
 import {
   CaretSortIcon,
   ChevronDownIcon,
@@ -39,18 +39,48 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { DropdownMenuRadioGroup, DropdownMenuRadioItem } from "@radix-ui/react-dropdown-menu"
-import { PiDotsThreeCircle } from "react-icons/pi"
 
-type UserInfo = {
-  id: number
-  first_name: string
-  last_name: string
-  gender: "Male" | "Female" | "Bigender" | "Agender" | "Genderqueer" | "Non-binary" | "Polygender"
+const data: Payment[] = [
+  {
+    id: "m5gr84i9",
+    amount: 316,
+    status: "success",
+    email: "ken99@yahoo.com",
+  },
+  {
+    id: "3u1reuv4",
+    amount: 242,
+    status: "success",
+    email: "Abe45@gmail.com",
+  },
+  {
+    id: "derv1ws0",
+    amount: 837,
+    status: "processing",
+    email: "Monserrat44@gmail.com",
+  },
+  {
+    id: "5kma53ae",
+    amount: 874,
+    status: "success",
+    email: "Silas22@gmail.com",
+  },
+  {
+    id: "bhqecj4p",
+    amount: 721,
+    status: "failed",
+    email: "carmella@hotmail.com",
+  },
+]
+
+export type Payment = {
+  id: string
+  amount: number
+  status: "pending" | "processing" | "success" | "failed"
   email: string
 }
 
-export const columns: ColumnDef<UserInfo>[] = [
+export const columns: ColumnDef<Payment>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -150,16 +180,15 @@ export const columns: ColumnDef<UserInfo>[] = [
     ),
   }
 ]
-interface TableViewProps {
-  data: UserInfo[];
-}
 
-export function TableView({ data }: TableViewProps) {
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = useState({})
-  const [filter, setFilter] = useState({ title: "Email", value: "email" })
+export function DataTableDemo() {
+  const [sorting, setSorting] = React.useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    []
+  )
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({})
+  const [rowSelection, setRowSelection] = React.useState({})
 
   const table = useReactTable({
     data,
@@ -181,32 +210,16 @@ export function TableView({ data }: TableViewProps) {
   })
 
   return (
-    <div className="rounded-md border bg-white my-6 p-6 lg:w-3/5 w-full">
+    <div className="w-full">
       <div className="flex items-center py-4">
         <Input
-          placeholder={`Filter ${filter.title}...`}
-          value={(table.getColumn(filter.value)?.getFilterValue() as string) ?? ""}
+          placeholder="Filter emails..."
+          value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn(filter.value)?.setFilterValue(event.target.value)
+            table.getColumn("email")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button><PiDotsThreeCircle className="text-2xl ml-4" /></button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-44 bg-white p-3 rounded-lg border border-gray-400">
-            <DropdownMenuLabel className="text-sm ml-1">Select a colum</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <hr className="my-1" />
-            <DropdownMenuRadioGroup value={filter.value} onValueChange={(newValue) => setFilter({ title: newValue.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), value: newValue })}>
-              <DropdownMenuRadioItem className="text-xs p-1 hover:bg-slate-200 cursor-pointer" value="first_name">First Name</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem className="text-xs p-1 hover:bg-slate-200 cursor-pointer" value="last_name">Last Name</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem className="text-xs p-1 hover:bg-slate-200 cursor-pointer" value="email">Email</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem className="text-xs p-1 hover:bg-slate-200 cursor-pointer" value="gender">Gender</DropdownMenuRadioItem>
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
@@ -217,7 +230,7 @@ export function TableView({ data }: TableViewProps) {
             {table
               .getAllColumns()
               .filter((column) => column.getCanHide())
-              ?.map((column) => {
+              .map((column) => {
                 return (
                   <DropdownMenuCheckboxItem
                     key={column.id}
@@ -237,17 +250,17 @@ export function TableView({ data }: TableViewProps) {
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            {table.getHeaderGroups()?.map((headerGroup) => (
+            {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers?.map((header) => {
+                {headerGroup.headers.map((header) => {
                   return (
                     <TableHead key={header.id}>
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
                     </TableHead>
                   )
                 })}
@@ -256,12 +269,12 @@ export function TableView({ data }: TableViewProps) {
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows?.map((row) => (
+              table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                 >
-                  {row.getVisibleCells()?.map((cell) => (
+                  {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
